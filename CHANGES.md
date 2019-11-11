@@ -76,7 +76,7 @@ All issues and pull requests are [here](https://github.com/apache/skywalking/mil
 * Support backend upgrade without rebooting required.
 * Open Redefine and Retransform by other agents.
 * Support Servlet 2.5 in Jetty, Tomcat and SpringMVC plugins.
-* Support Spring @Async plugin.
+* Support Spring  plugin.
 * Add new config item to restrict the length of span#peer.
 * Refactor `ContextManager#stopSpan`.
 * Add gRPC timeout.
