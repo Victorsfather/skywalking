@@ -1,57 +1,117 @@
-TraceSegmentServiceClient
-	->boot()
-		->carrier = new DataCarrier<TraceSegment>(CHANNEL_SIZE, BUFFER_SIZE);                                                                       // 初始化 CHANNEL_SIZE = 5 个 channel 与 BUFFER_SIZE = 100 个 TraceSegment 的一个 DataCarrier 数据搬运工
-			->this.name = name;
-			->this.bufferSize = EnvUtil.getInt(envPrefix + "_BUFFER_SIZE", bufferSize);
-			->this.channelSize = EnvUtil.getInt(envPrefix + "_CHANNEL_SIZE", channelSize);
-			->channels = new Channels<T>(channelSize, bufferSize, new SimpleRollingPartitioner<T>(), BufferStrategy.BLOCKING);
-                ->this.dataPartitioner = partitioner;
-                ->this.strategy = strategy;
-                ->bufferChannels = new Buffer[channelSize];
-                ->for (int i = 0; i < channelSize; i++) {
-                ->    bufferChannels[i] = new Buffer<T>(bufferSize, strategy);
-                ->}
-                ->size = channelSize * bufferSize;                                                                                                  //缓存大小
-        ->carrier.setBufferStrategy(BufferStrategy.IF_POSSIBLE);                                                                                    //设置策略 阻塞还是异步
-        ->carrier.consume(this, 1);                                                                                                                 //把TraceSegmentServiceClient的object 放进
-			->this.consume(consumer, num, 20);
-				->driver = new ConsumeDriver<T>(this.name, this.channels, consumer, num, consumeCycle);												//Thread.sleep(consumeCycle);
-				    ->this(channels, num);
-					->prototype.init();
-					->for (int i = 0; i < num; i++) {
-					->  consumerThreads[i] = new ConsumerThread("DataCarrier." + name + ".Consumser." + i + ".Thread", prototype, consumeCycle);    //初始化消费者线程
-                    ->  consumerThreads[i].setDaemon(true);
+skywalking
+BootService                                                                                                                                             //客户端
+    TraceSegmentServiceClient
+        ->boot()
+            ->carrier = new DataCarrier<TraceSegment>(CHANNEL_SIZE, BUFFER_SIZE);                                                                       // 初始化 CHANNEL_SIZE = 5 个 channel 与 BUFFER_SIZE = 100 个 TraceSegment 的一个 DataCarrier 数据搬运工
+                ->this.name = name;
+                ->this.bufferSize = EnvUtil.getInt(envPrefix + "_BUFFER_SIZE", bufferSize);
+                ->this.channelSize = EnvUtil.getInt(envPrefix + "_CHANNEL_SIZE", channelSize);
+                ->channels = new Channels<T>(channelSize, bufferSize, new SimpleRollingPartitioner<T>(), BufferStrategy.BLOCKING);
+                    ->this.dataPartitioner = partitioner;
+                    ->this.strategy = strategy;
+                    ->bufferChannels = new Buffer[channelSize];
+                    ->for (int i = 0; i < channelSize; i++) {
+                    ->    bufferChannels[i] = new Buffer<T>(bufferSize, strategy);
                     ->}
-				->driver.begin(channels);
-GRPCChannelManager
-    ->boot()
-        ->grpcServers = Arrays.asList(Config.Collector.BACKEND_SERVICE.split(","));
-        ->connectCheckFuture = Executors                                                                                                            //初始化 GRPCChannelManager 的线程
-        .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("GRPCChannelManager"))
-        .scheduleAtFixedRate(new RunnableWithExceptionProtection(this, new RunnableWithExceptionProtection.CallbackWhenException() {
-          @Override
-          public void handle(Throwable t) {
-              logger.error("unexpected exception.", t);
-          }
-        }), 0, Config.Collector.GRPC_CHANNEL_CHECK_INTERVAL, TimeUnit.SECONDS);
-JVMService
-	->prepare
-		->queue = new LinkedBlockingQueue<JVMMetric>(Config.Jvm.BUFFER_SIZE);
-        ->sender = new Sender();
-        ->ServiceManager.INSTANCE.findService(GRPCChannelManager.class).addChannelListener(sender);
-	->boot	
-		->collectMetricFuture = Executors
-            .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("JVMService-produce"))
+                    ->size = channelSize * bufferSize;                                                                                                  //缓存大小
+            ->carrier.setBufferStrategy(BufferStrategy.IF_POSSIBLE);                                                                                    //设置策略 阻塞还是异步
+            ->carrier.consume(this, 1);                                                                                                                 //把TraceSegmentServiceClient的object 放进
+                ->this.consume(consumer, num, 20);
+                    ->driver = new ConsumeDriver<T>(this.name, this.channels, consumer, num, consumeCycle);												//Thread.sleep(consumeCycle);
+                        ->this(channels, num);
+                        ->prototype.init();
+                        ->for (int i = 0; i < num; i++) {
+                        ->  consumerThreads[i] = new ConsumerThread("DataCarrier." + name + ".Consumser." + i + ".Thread", prototype, consumeCycle);    //初始化消费者线程
+                        ->  consumerThreads[i].setDaemon(true);
+                        ->}
+                    ->driver.begin(channels);
+    GRPCChannelManager
+        ->boot()
+            ->grpcServers = Arrays.asList(Config.Collector.BACKEND_SERVICE.split(","));
+            ->connectCheckFuture = Executors                                                                                                            //初始化 GRPCChannelManager 的线程
+            .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("GRPCChannelManager"))
             .scheduleAtFixedRate(new RunnableWithExceptionProtection(this, new RunnableWithExceptionProtection.CallbackWhenException() {
-                @Override public void handle(Throwable t) {
-                    logger.error("JVMService produces metrics failure.", t);
+              @Override
+              public void handle(Throwable t) {
+                  logger.error("unexpected exception.", t);
+              }
+            }), 0, Config.Collector.GRPC_CHANNEL_CHECK_INTERVAL, TimeUnit.SECONDS);
+    JVMService
+        ->prepare
+            ->queue = new LinkedBlockingQueue<JVMMetric>(Config.Jvm.BUFFER_SIZE);
+            ->sender = new Sender();
+            ->ServiceManager.INSTANCE.findService(GRPCChannelManager.class).addChannelListener(sender);
+        ->boot
+            ->collectMetricFuture = Executors
+                .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("JVMService-produce"))
+                .scheduleAtFixedRate(new RunnableWithExceptionProtection(this, new RunnableWithExceptionProtection.CallbackWhenException() {
+                    @Override public void handle(Throwable t) {
+                        logger.error("JVMService produces metrics failure.", t);
+                    }
+                }), 0, 1, TimeUnit.SECONDS);
+            ->sendMetricFuture = Executors
+                .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("JVMService-consume"))
+                .scheduleAtFixedRate(new RunnableWithExceptionProtection(sender, new RunnableWithExceptionProtection.CallbackWhenException() {
+                    @Override public void handle(Throwable t) {
+                        logger.error("JVMService consumes and upload failure.", t);
+                    }
                 }
-            }), 0, 1, TimeUnit.SECONDS);
-        ->sendMetricFuture = Executors
-            .newSingleThreadScheduledExecutor(new DefaultNamedThreadFactory("JVMService-consume"))
-            .scheduleAtFixedRate(new RunnableWithExceptionProtection(sender, new RunnableWithExceptionProtection.CallbackWhenException() {
-                @Override public void handle(Throwable t) {
-                    logger.error("JVMService consumes and upload failure.", t);
-                }
-            }
-            ), 0, 1, TimeUnit.SECONDS);
+                ), 0, 1, TimeUnit.SECONDS);
+//OAPServer会在启动时通过 Java SPI 加载这 15个模块
+org.apache.skywalking.oap.server.library.module.ModuleDefine
+
+//服务端管理这15个模块
+//模块之间存在依赖关系,首先先加载无依赖的项的,不可循环依赖
+cluster=org.apache.skywalking.oap.server.core.cluster.ClusterModule
+configuration=org.apache.skywalking.oap.server.configuration.api.ConfigurationModule
+receiver-clr=org.apache.skywalking.oap.server.receiver.clr.module.CLRModule
+query=org.apache.skywalking.oap.server.core.query.QueryModule
+storage=org.apache.skywalking.oap.server.core.storage.StorageModule
+receiver-trace=org.apache.skywalking.oap.server.receiver.trace.module.TraceModule
+envoy-metric=org.apache.skywalking.oap.server.receiver.envoy.EnvoyMetricReceiverModule
+istio-telemetry=org.apache.skywalking.oap.server.receiver.istio.telemetry.module.IstioTelemetryReceiverModule
+receiver-jvm=org.apache.skywalking.oap.server.receiver.jvm.module.JVMModule
+core=org.apache.skywalking.oap.server.core.CoreModule
+receiver-sharing-server=org.apache.skywalking.oap.server.receiver.sharing.server.SharingServerModule
+service-mesh=org.apache.skywalking.aop.server.receiver.mesh.MeshReceiverModule
+alarm=org.apache.skywalking.oap.server.core.alarm.AlarmModule
+telemetry=org.apache.skywalking.oap.server.telemetry.TelemetryModule
+receiver-register=org.apache.skywalking.oap.server.receiver.register.module.RegisterModule
+ModuleProvider//服务端 此类负责加载与实例化 ModulePr
+    ModuleManager
+    自定义实现的话,需要提供实现了
+    ModuleProvider的
+        prepare()
+
+    manager.init(applicationConfiguration)
+    AlarmModuleProvider
+        prepare()
+            applicationReader = ResourceUtils.read("alarm-settings.yml");
+            RulesReader reader = new RulesReader(applicationReader);
+            Rules rules = reader.readRules();
+            notifyHandler = new NotifyHandler(rules);
+                this.rules = rules;
+                core = new AlarmCore(rules);
+                    runningContext = new HashMap<>();
+                            rules.getRules().forEach(rule -> {
+                                RunningRule runningRule = new RunningRule(rule);
+                                    metricsName = alarmRule.getMetricsName();
+                                        this.ruleName = alarmRule.getAlarmRuleName();  //设置规则名alarm-settings 里的rules下以 _rule为结尾的
+                                        // Init the empty window for alarming rule.
+                                        windows = new ConcurrentHashMap<>();           //初始化窗口
+                                        period = alarmRule.getPeriod();                //设置
+                                        threshold = new Threshold(alarmRule.getAlarmRuleName()
+ alarmRule.getThreshold());
+                                        op = OP.get(alarmRule.getOp());
+                                        this.countThreshold = alarmRule.getCount();
+                                        this.silencePeriod = alarmRule.getSilencePeriod();
+                                        this.includeNames = alarmRule.getIncludeNames();
+                                        this.formatter = new AlarmMessageFormatter(alarmRule.getMessage());
+                                String metricsName = rule.getMetricsName();
+                                List<RunningRule> runningRules = runningContext.computeIfAbsent(metricsName
+ key -> new ArrayList<>());
+                                runningRules.add(runningRule);
+                            });
+            notifyHandler.init(new AlarmStandardPersistence());
+            this.registerServiceImplementation(MetricsNotify.class, notifyHandler);
+

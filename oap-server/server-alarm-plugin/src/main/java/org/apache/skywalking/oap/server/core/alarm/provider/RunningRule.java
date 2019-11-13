@@ -158,8 +158,7 @@ public class RunningRule {
     }
 
     /**
-     * A metrics window, based on {@link AlarmRule#period}. This window slides with time, just keeps the recent
-     * N(period) buckets.
+     * A metrics window, based on {@link AlarmRule#period}. This window slides with time,
      *
      * @author wusheng
      */

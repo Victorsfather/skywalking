@@ -34,6 +34,7 @@ rules:
     include-names:
       - dubbox-provider
       - dubbox-consumer
+    #threshold
     threshold: 1000
     op: ">"
     period: 10
