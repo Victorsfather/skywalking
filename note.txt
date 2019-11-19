@@ -1,3 +1,5 @@
+客户端向服务端发送数据逻辑
+
 skywalking
 BootService                                                                                                                                             //客户端
     TraceSegmentServiceClient
@@ -62,6 +64,7 @@ org.apache.skywalking.oap.server.library.module.ModuleDefine
 
 //服务端管理这15个模块
 //模块之间存在依赖关系,首先先加载无依赖的项的,不可循环依赖
+
 cluster=org.apache.skywalking.oap.server.core.cluster.ClusterModule
 configuration=org.apache.skywalking.oap.server.configuration.api.ConfigurationModule
 receiver-clr=org.apache.skywalking.oap.server.receiver.clr.module.CLRModule
@@ -77,11 +80,18 @@ service-mesh=org.apache.skywalking.aop.server.receiver.mesh.MeshReceiverModule
 alarm=org.apache.skywalking.oap.server.core.alarm.AlarmModule
 telemetry=org.apache.skywalking.oap.server.telemetry.TelemetryModule
 receiver-register=org.apache.skywalking.oap.server.receiver.register.module.RegisterModule
-ModuleProvider//服务端 此类负责加载与实例化 ModulePr
+
+
+ModuleProvider//服务端 此类负责加载与实例化 org.apache.skywalking.oap.server.library.module.Service
     ModuleManager
     自定义实现的话,需要提供实现了
     ModuleProvider的
         prepare()
+        start()
+        notifyAfterCompleted()
+        requiredModules[]
+        registerServiceImplementation()
+        方法的
 
     manager.init(applicationConfiguration)
     AlarmModuleProvider
@@ -113,5 +123,5 @@ ModuleProvider//服务端 此类负责加载与实例化 ModulePr
                                 runningRules.add(runningRule);
                             });
             notifyHandler.init(new AlarmStandardPersistence());
-            this.registerServiceImplementation(MetricsNotify.class, notifyHandler);
+            this.registerServiceImplementation(MetricsNotify.class, notifyHandler); //注册模块的 Service
 
