@@ -1,5 +1,28 @@
 客户端向服务端发送数据逻辑
-
+TracingContext#
+stopSpan
+    finish();
+        if (isRunningInAsyncMode)//判断是否在异步模式下
+        if (activeSpanStack.isEmpty() && running && (!isRunningInAsyncMode || asyncSpanCounter.get() == 0)) {//
+        TraceSegment finishedSegment = segment.finish(isLimitMechanismWorking());//限定发送数据的是否工作
+             if (spanIdGenerator >= Config.Agent.SPAN_LIMIT_PER_SEGMENT) { //判断配置限定每个segment的可容纳多少个span是否超过限制的
+        if (!segment.hasRef() && segment.isSingleSpanSegment()) {//判断
+        TracingContext.ListenerManager.notifyFinish(finishedSegment)
+            if (traceSegment.isIgnore()) { //判断此traceSegment是否忽略
+            //produce data to buffer, using the givven {@link BufferStrategy}.
+            if (!carrier.produce(traceSegment)) { //把traceSegment 放到 data to buffer, using the givven {@link BufferStrategy}. //mark! 生产消费模型
+                if (driver != null) { //判断消费队列是否为空
+                driver.isRunning(channels)//判断channel是否还在
+                //Channels of Buffer It contains all buffer data which belongs to this channel. It supports several strategy when buffer
+                //is full. The Default is BLOCKING <p> Created by wusheng on 2016/10/25.
+                return this.channels.save(data);//
+                    int index = dataPartitioner.partition(bufferChannels.length, data);
+                    if (BufferStrategy.IF_POSSIBLE.equals(strategy)) {
+                    int maxRetryCount = dataPartitioner.maxRetryCount();
+                    for (; retryCountDown > 0; retryCountDown--) {
+                    if (bufferChannels[index].save(data)) {
+                         int i = index.getAndIncrement();
+                         if (buffer[i] != null) {
 skywalking
 BootService                                                                                                                                             //客户端
     TraceSegmentServiceClient
