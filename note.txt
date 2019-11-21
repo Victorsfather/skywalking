@@ -10,7 +10,9 @@ stopSpan
         TracingContext.ListenerManager.notifyFinish(finishedSegment)
             if (traceSegment.isIgnore()) { //判断此traceSegment是否忽略
             //produce data to buffer, using the givven {@link BufferStrategy}.
-            if (!carrier.produce(traceSegment)) { //把traceSegment 放到 data to buffer, using the givven {@link BufferStrategy}. //mark! 生产消费模型
+             //把traceSegment 放到 data to buffer, using the givven {@link BufferStrategy}. //mark! 生产消费模型
+             //这里会丢弃数据在debug 模式下才能看到log #1
+            if (!carrier.produce(traceSegment)) {
                 if (driver != null) { //判断消费队列是否为空
                 driver.isRunning(channels)//判断channel是否还在
                 //Channels of Buffer It contains all buffer data which belongs to this channel. It supports several strategy when buffer
@@ -21,9 +23,31 @@ stopSpan
                     int maxRetryCount = dataPartitioner.maxRetryCount();
                     for (; retryCountDown > 0; retryCountDown--) {
                     if (bufferChannels[index].save(data)) {
-                         int i = index.getAndIncrement();
-                         if (buffer[i] != null) {
-skywalking
+                        int i = index.getAndIncrement();
+                        if (buffer[i] != null) {//如果cibuffer已被占用,
+                        switch (strategy) {//配置策略
+                        case BLOCKING://阻塞当前线程
+                        boolean isFirstTimeBlocking = true;//是否第一次阻塞
+                        while (buffer[i] != null) {
+                        if (isFirstTimeBlocking) {
+                        isFirstTimeBlocking = false;
+                        for (QueueBlockingCallback<T> callback : callbacks) {
+                        callback.notify(data);//调用阻塞回调
+                        Thread.sleep(1L);
+                        //默认策略 返回false 表示没有被消费
+                        #1
+                        case IF_POSSIBLE:
+                        case OVERRIDE:
+DataCarrier.DEFAULT.Consumser.0.Thread 线程名
+ConsumerThread<T>
+    run()
+        final List<T> consumeList = new ArrayList<T>(1500);
+        while (running) {
+        if (!consume(consumeList)) {
+        Thread.sleep(consumeCycle);
+
+
+skywalking 客户端启动逻辑
 BootService                                                                                                                                             //客户端
     TraceSegmentServiceClient
         ->boot()

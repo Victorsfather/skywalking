@@ -21,6 +21,9 @@ package org.apache.skywalking.apm.plugin.spring.mvc.v5.define;
 
 public class RestControllerInstrumentation extends AbstractControllerInstrumentation {
 
+    /**
+     * {@link org.springframework.web.bind.annotation.RestController}
+     */
     public static final String ENHANCE_ANNOTATION = "org.springframework.web.bind.annotation.RestController";
 
     @Override protected String[] getEnhanceAnnotations() {

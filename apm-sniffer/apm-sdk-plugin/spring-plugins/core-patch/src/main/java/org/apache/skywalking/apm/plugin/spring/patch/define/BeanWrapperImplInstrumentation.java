@@ -31,6 +31,10 @@ import static org.apache.skywalking.apm.agent.core.plugin.match.NameMatch.byName
 
 public class BeanWrapperImplInstrumentation extends ClassInstanceMethodsEnhancePluginDefine {
 
+    /**
+     * {@link org.springframework.beans.BeanWrapperImpl}
+     *
+     */
     private static final String ENHANCE_CLASS = "org.springframework.beans.BeanWrapperImpl";
 
     @Override public ConstructorInterceptPoint[] getConstructorsInterceptPoints() {

@@ -35,6 +35,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 public class HandlerMethodInstrumentation extends AbstractSpring5Instrumentation {
 
     public static final String ENHANCE_METHOD = "getBean";
+    /**
+     * {@link org.springframework.web.method.HandlerMethod}
+     */
     public static final String ENHANCE_CLASS = "org.springframework.web.method.HandlerMethod";
 
     @Override
