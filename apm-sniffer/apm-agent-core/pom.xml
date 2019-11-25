@@ -40,15 +40,15 @@
         <wiremock.version>2.6.0</wiremock.version>
         <netty-tcnative-boringssl-static.version>2.0.7.Final</netty-tcnative-boringssl-static.version>
         <os-maven-plugin.version>1.4.1.Final</os-maven-plugin.version>
-        <shade.package>org.apache.skywalking.apm.dependencies</shade.package>
+        <!--<shade.package>org.apache.skywalking.apm.dependencies</shade.package>-->
         <shade.com.google.source>com.google</shade.com.google.source>
-        <shade.com.google.target>${shade.package}.${shade.com.google.source}</shade.com.google.target>
+        <shade.com.google.target><!--${shade.package}.-->${shade.com.google.source}</shade.com.google.target>
         <shade.io.grpc.source>io.grpc</shade.io.grpc.source>
-        <shade.io.grpc.target>${shade.package}.${shade.io.grpc.source}</shade.io.grpc.target>
+        <shade.io.grpc.target><!--${shade.package}.-->${shade.io.grpc.source}</shade.io.grpc.target>
         <shade.io.netty.source>io.netty</shade.io.netty.source>
-        <shade.io.netty.target>${shade.package}.${shade.io.netty.source}</shade.io.netty.target>
+        <shade.io.netty.target><!--${shade.package}.-->${shade.io.netty.source}</shade.io.netty.target>
         <shade.io.opencensus.source>io.opencensus</shade.io.opencensus.source>
-        <shade.io.opencensus.target>${shade.package}.${shade.io.opencensus.source}</shade.io.opencensus.target>
+        <shade.io.opencensus.target><!--${shade.package}.-->${shade.io.opencensus.source}</shade.io.opencensus.target>
         <ststem-rules.version>1.18.0</ststem-rules.version>
     </properties>
 

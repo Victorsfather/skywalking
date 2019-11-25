@@ -85,6 +85,7 @@ public class ActiveSpanTest {
 
     @Test
     public void testActiveSpanError() throws Throwable {
+        System.out.println("aaaaaaaabbb");
         Method withOperationNameMethod = MockActiveSpan.class.getDeclaredMethod("testErrorMethod");
         methodInterceptor.beforeMethod(enhancedInstance, withOperationNameMethod, null, null, null);
         activeSpanErrorMsgInterceptor.beforeMethod(MockActiveSpan.class, withOperationNameMethod, tagParametersMsg, tagParameterTypesMsg, null);
@@ -102,6 +103,8 @@ public class ActiveSpanTest {
         assertTrue(field.getBoolean(tracingSpan));
         SpanAssert.assertLogSize(tracingSpan, 1);
         SpanAssert.assertTagSize(tracingSpan, 0);
+        Exception a = new Exception("aaaaaaaa");
+        throw a;
     }
 
     @Test
