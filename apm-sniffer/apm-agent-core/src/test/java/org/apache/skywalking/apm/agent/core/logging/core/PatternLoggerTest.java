@@ -117,6 +117,12 @@ public class PatternLoggerTest {
                 strings.add(r);
             }
         };
+//        logmsg: %%%%%%!@#$%^&*() %{this is message} \
+//
+// %msg
+
+//        logmsg: %%%%%%!@#$\%^&*() %{this is message} \\ \n\t
+// %%msg
         logger.info("msg");
         Assert.assertThat(strings.get(0), StringContains.containsString("logmsg: %%%%%%!@#$%^&*() %{this is message} \\ \n\t \t\n %msg"));
     }
