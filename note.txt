@@ -1,3 +1,5 @@
+记住程序不知道怎么决定是应该配置默认
+
 agent 启动逻辑
 SkyWalkingAgent#premain
     SnifferConfigInitializer.initialize(agentArgs);//读取参数,从配置与环境变量里读取
@@ -49,6 +51,14 @@ ConsumerThread<T>
         final List<T> consumeList = new ArrayList<T>(1500);
         while (running) {
         if (!consume(consumeList)) {
+            dataSource.obtain(consumeList);
+            consumer.consume(consumeList);
+            ^TraceSegmentServiceClient#consume(List<TraceSegment> data)
+             if (CONNECTED.equals(status)) {
+             final GRPCStreamServiceStatus status = new GRPCStreamServiceStatus(false);
+             StreamObserver<UpstreamSegment> upstreamSegmentStreamObserver = serviceStub.withDeadlineAfter(Config.Collector.GRPC_UPSTREAM_TIMEOUT, TimeUnit.SECONDS).collect(new StreamObserver<Commands>()
+
+
         Thread.sleep(consumeCycle);
 
 
